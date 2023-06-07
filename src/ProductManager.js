@@ -1,4 +1,4 @@
-fs = require('fs');
+import fs from 'fs';
 const NAME_FILE = 'products.json'
 
 class ProductManager {
@@ -7,69 +7,75 @@ class ProductManager {
     #_idCount = 0;
 
 
-    constructor(path = '../src') {
+    constructor(path = './src') {
         this.#_path = `${path}/${NAME_FILE}`;
         this.#_productList = this.getProducts();
     }
 
+    
     //AGREGAR PRODUCTO
     addProduct(newProduct) {
-
         this.#_idCount++;
 
         //Valida si existe el producto
         if (this.existeValueInArray(this.#_productList, this.#_idCount)) {
             throw 'El producto ya existe'
         }
+
         this.#_productList.push(this.validateObject({
             title: newProduct.title,
             description: newProduct.description,
-            price: newProduct.price,
-            thumbnail: newProduct.thumbnail,
             code: newProduct.code,
+            price: newProduct.price,
+            status: newProduct.status,
             stock: newProduct.stock,
+            category: newProduct.category,
+            thumbnail: newProduct.thumbnail,
+
+            status: true,
             id: this.#_idCount
         }))
 
         this.saveDataFile(this.#_path, this.#_productList);
     }
 
-    // CONSULTAR PRODUCTOS
+   // CONSULTAR PRODUCTOS
     getProducts() {
-
         if (fs.existsSync(this.#_path)) {
-
             try {
                 const reading = this.readDataFile(this.#_path)
-                if (typeof reading != 'string' && Array.isArray(JSON.parse(reading))) {
+                if (Array.isArray(JSON.parse(reading))) {
+                    
                     const resultFileParse = JSON.parse(reading).sort((a, b) => b.id - a.id);
+                    
                     this.#_idCount = resultFileParse[0].id
-                    console.log(JSON.parse(reading));
                     return this.#_productList = JSON.parse(reading);
                 }
             } catch (error) {
                 throw error.message
             }
         }
-        return this.#_productList;
-    }
 
-    getProductById(id) {
-        return this.#_productList.find((product) => product.id === id)
+        return this.#_productList;
     }
 
     //Actualiza un producto
     updateProduct(dataUpdate, id) {
         delete dataUpdate.id;
 
-        if (!this.existeValueInArray(this.#_productList, this.#_idCount)) {
+        if (!this.existeValueInArray(this.#_productList, id)) {
             throw 'El producto a actualizar no Existe'
         }
-        this.#_productList.map((product) => {
-            if (product.id === id) {
-                product = { ...product }
+
+        this.#_productList = this.#_productList.map((product) => {
+
+            if (product.id == id) {
+                return product = { ...product ,...dataUpdate  }  
             }
+            return product
         })
+
+        this.saveDataFile(this.#_path, this.#_productList);
     }
 
     // Eliminasdasdasda un Producto
@@ -120,7 +126,7 @@ class ProductManager {
     }
 
     existeValueInArray = (array, id) => {
-        if (array.find((value) => value.id === id)) {
+        if (array.find((value) => value.id == id)) {
             return true;
         }
         return false;
@@ -128,7 +134,9 @@ class ProductManager {
 
 };
 
-module.exports =  ProductManager;
+export {ProductManager};
+
+//module.exports =  ProductManager;
 
 
 

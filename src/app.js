@@ -1,22 +1,22 @@
-const express = require('express');
-const fs = require('fs');
-const productManager = require('./ProductManager');
-
+import express from 'express';
+import productsRouter from './routes/products.router.js';
+import cartsRouter from './routes/carts.router.js';
+import fs from 'fs';
 
 
 
 const app = express();
-
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const prodManager = new productManager();
-    
+app.use('/api/products', productsRouter);
+app.use('/api/carts', cartsRouter);  
 
 
 try {
     
     
-    app.get('/products', async (req, res) => {
+   /* app.get('/products', async (req, res) => {
 
        
         const {limit} =  req.query;
@@ -32,8 +32,11 @@ try {
         }
         
         
-    })
-    app.listen(8080, () => console.log('On line'));
+    })*/
+
+
+    app.listen(8080, () => console.log('Server Corriendo en: http://localhost:8080/'));
+    
 } catch (error) {
     console.log(error);
 }
