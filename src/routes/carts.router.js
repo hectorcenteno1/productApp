@@ -1,18 +1,17 @@
 import { Router } from 'express';
 const router = Router();
-import { CartManager } from '../CartManager.js';
+import cart from '../dao/dbManager/cartManager.js';
 
 
-const cartManager = new CartManager();
+
+const cartManager = new cart();
 
 router.get('/:cId', async (req, res) => {
 
     const idSolicitado = req.params.cId;
-    const arrayCarts = cartManager.getCarts();
+    const cartSolicitado = await cartManager.getCartById(idSolicitado);
 
-    if (parseInt(idSolicitado) <= arrayCarts.length) {
-
-        const cartSolicitado = cartManager.getCartById(idSolicitado);
+    if (!cartSolicitado.error) {
 
         res.send(cartSolicitado);
     } else {
@@ -22,26 +21,39 @@ router.get('/:cId', async (req, res) => {
 
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
 
-    try {
-        cartManager.addCart();
-        res.status(200).send({ message: 'Carga Exitosa' })
-    } catch (error) {
-        res.status(500).send({ message: error })
+    const addCart = await cartManager.addCart();
+
+    if (!addCart.error) {
+        res.status(200).send(addCart);
+    } else {
+        res.status(addCart.status).send(addCart);
+
     }
+
+
 });
 
-router.post('/:cId/product/:pId', (req, res) => {
+router.post('/:cId/product/:pId', async (req, res) => {
     //const {cId: carritoId, pId: productId }= req.params
     const carritoId = req.params.cId;
     const productId = req.params.pId;
+
+
+    const addProdToCart = await cartManager.addProductToCart(carritoId, productId);
+
+    console.log("error", addProdToCart);
     try {
-        cartManager.addProductToCart(carritoId, productId);
-        res.status(200).send({ message: 'Carga Exitosa' })
+        if (!addProdToCart.error) {
+            console.log("entre");
+            res.send(addProdToCart);
+
+        }
     } catch (error) {
-        res.status(500).send({ message: error })
+        console.log(error);
     }
+
 });
 
 

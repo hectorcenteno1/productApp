@@ -1,30 +1,18 @@
 import { Router } from 'express';
 
-import { ProductManager } from '../ProductManager.js';
+import product from '../dao/dbManager/productManager.js'
+//import { ProductManager } from '../dao/fileManager/ProductManager.js';
 import io from '../app.js';
 
 const router = Router();
 
-const prodManager = new ProductManager();
+const prodManager = new product();
 
 router.get('/', async (req, res) => {
 
-    const { limit } = req.query;
+    let products = await prodManager.getProducts();
 
-    const resultado = await prodManager.getProducts();
-    if (typeof limit === "string") {
-
-        let arrayresult = [];
-        for (let i = 0; i < parseInt(limit); i++) {
-            arrayresult.push(resultado[i]);
-
-        }
-        res.send(arrayresult);
-
-    } else {
-
-        res.send(resultado);
-    }
+    res.send({ status: "success", payload: products });
 
 });
 
@@ -32,13 +20,6 @@ router.get("/realTimeProducts", async (req, res) => {
 
     const { limit } = req.query;
     const resultado = await prodManager.getProducts();
-
-    if (typeof limit === "string") {
-        let arrayresult = [];
-        for (let i = 0; i < parseInt(limit); i++) {
-            arrayresult.push(resultado[i]);
-        }
-    }
 
     if (!resultado.error) {
 
@@ -52,8 +33,6 @@ router.get("/realTimeProducts", async (req, res) => {
             io.emit("products", resultado);
         });
         res.render("realTimeProducts", {});
-
-        res.render("realTimeProducts", {});
     } else {
         res.status(resultado.status).send(resultado);
     }
@@ -62,29 +41,26 @@ router.get("/realTimeProducts", async (req, res) => {
 router.get('/:pId', async (req, res) => {
 
     const idSolicitado = req.params.pId;
-    const arrayProductos = prodManager.getProducts();
+    let product = await prodManager.getProductById(idSolicitado);
 
-    if (parseInt(idSolicitado) <= arrayProductos.length) {
+    if(!product.error){
+     res.send({ status: "success", payload: product });
 
-        const producSolicitado = prodManager.getProductById(idSolicitado);
-
-        res.send(producSolicitado);
-    } else {
-
-        res.send(`El producto con ID:${idSolicitado} no existe`);
+    } else{
+        res.status(product.status).send(product);
     }
 
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
 
-    let product = req.body;
+    const product = req.body;
 
     try {
-        prodManager.addProduct(product);
+        let result = await prodManager.addProduct(product);
         io.emit("products", prodManager.getProducts());
 
-        res.status(200).send({ message: 'Carga Exitosa' })
+        res.status(200).send({ message: 'Carga Exitosa', payload: result })
     } catch (error) {
         res.status(500).send({ message: error })
     }
@@ -95,10 +71,8 @@ router.put('/:pId', (req, res) => {
     const producto = req.body;
 
     try {
-
-        prodManager.updateProduct(producto, idActualizar);
-        const prodActualizar = prodManager.getProductById(idActualizar);
-
+        prodManager.updateProduct(idActualizar, producto);
+        prodManager.getProductById(idActualizar);
 
         res.status(200).send({ message: 'Producto Actualizado Exitosamente' })
 
@@ -123,8 +97,5 @@ router.delete('/:pId', (req, res) => {
         res.status(500).send({ message: error })
     }
 })
-
-
-
 
 export default router;
