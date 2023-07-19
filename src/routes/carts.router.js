@@ -80,10 +80,10 @@ router.put("/:cid/product", async (req, res) => {
 });
 
 router.put("/:cid/product/:pid", async (req, res) => {
-    const { cartId, productId } = req.params;
+    const { cid, pid } = req.params;
     const { quantity } = req.body;
     console.log(quantity);
-    const updateProduct = await cartManager.updateQuantity(cartId, productId, quantity);
+    const updateProduct = await cartManager.updateQuantity(cid, pid, quantity);
 
     if (!updateProduct.error) {
         res.send(updateProduct)
@@ -96,7 +96,7 @@ router.put("/:cid/product/:pid", async (req, res) => {
 router.delete("/:cid/product/:pid", async (req, res) => {
     const cartId = req.params.cid;
     const productId = req.params.pid;
-    const deleteProduct = await cartManager.removeToCart(cartId, productId);
+    const deleteProduct = await cartManager.deleteProdCart(cartId, productId);
 
     if(!deleteProduct.error){
         res.send(deleteProduct)
@@ -107,7 +107,7 @@ router.delete("/:cid/product/:pid", async (req, res) => {
 
   router.delete("/:cid/products", async (req, res) => {
     const cartId = req.params.cid;
-    const deleteResponse = await dbcm.removeAllProductsToCart(cartId);
+    const deleteResponse = await cartManager.removeAllToCart(cartId);
     if(!deleteResponse.error){
         res.send(deleteResponse)
 

@@ -60,6 +60,7 @@ export default class Cart {
     addProductToCart = async (cartid, productId) => {
         try {
 
+            const pid = productId;
             const cart = await cartModel.findById(cartid);
 
             if (cart === null) {
@@ -76,27 +77,23 @@ export default class Cart {
                 }
             }
 
-            const productInCart = await cartModel.findById(productId);
-
-            if (productInCart) {
-                const productIndex = cart.findIndex(product => product.productId === productId);
-                const newCart = cart;
-                newCart[productIndex].quantity++;
-
-                return await cartModel.findByIdAndUpdate(cartid, { products: newCart });
+            const productInCart = cart.products.find((product) => product.pid == pid);
+            if (!productInCart) {
+                return await cartModel.findByIdAndUpdate(cartid, {
+                    $push: { products: { pid, quantity: 1 } },
+                });
             }
+            return await cartModel.findOneAndUpdate({ "_id": cartid, 'products._id': productInCart._id }, { $inc: { "products.$.quantity": 1 } });
 
-            return await cartModel.findByIdAndUpdate(cartid, {
-                $push: { products: { productId, quantity: 1 } },
-            });
         } catch (error) {
             return {
-                error: `an error ocurred while adding the product`,
+                error: error.message
+
             };
         }
     }
 
-    deleteCart = async (cartid, productId) => {
+    deleteProdCart = async (cartid, productId) => {
         try {
             const cartId = await this.getCartById(cartid);
             if (cartId.error) {
@@ -147,7 +144,7 @@ export default class Cart {
             console.log(carts, products);
 
             const productInCart = carts.find((product) => product.productId._id == productId);
-
+            console.log(productInCart);
             if (productInCart) {
                 const productIndex = carts.findIndex((product) => product.productId._id == productId);
 
