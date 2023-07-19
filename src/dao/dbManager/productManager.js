@@ -9,25 +9,26 @@ export default class Product {
     }
 
 
-    getProducts = async (limit) => {
-
+    getProducts = async (query = '{}', limit = 10, page = 1, sort) => {
+        const options = {
+            page,
+            limit,
+            sort: { price: sort }
+        };
+        if (!sort) {
+            delete options.sort
+        }
         try {
-            if (!limit) {
-
-                return await productModel.find()
-            } else {
-                productModel.find().limit(limit)
-            }
+            const result = await productModel.paginate(JSON.parse(query), options);
+            return result
         }
         catch (error) {
             return console.log(error);;
-
         }
     }
 
     getProductById = async (id) => {
         try {
-
 
             let product = await productModel.findById(id);
             if (product === null) {
@@ -35,7 +36,6 @@ export default class Product {
                     error: `Product with id ${id} not found`,
                 }
             }
-
             return product;
 
         } catch (error) {
@@ -60,36 +60,26 @@ export default class Product {
                 }
             }
             return productUpdate;
-
         } catch (error) {
             return {
                 error: `An error occurred while obtaining the product with id ${id}`,
             };
         }
-        let product = await productModel.findByIdAndUpdate(id, prod);
-        return product;
-
     }
 
     deleteProduct = async (id) => {
         try {
             let productDeleted = await productModel.findByIdAndDelete(id);
-
             if (productDeleted === null) {
                 return {
                     error: `Product with id ${id} not found`,
                 }
             } else {
                 return `Product with id ${id} deleted`;
-
             }
         }
         catch (error) {
             return console.log(error);
-
         }
-
     }
-
-
 }

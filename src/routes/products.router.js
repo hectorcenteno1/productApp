@@ -10,9 +10,8 @@ const prodManager = new product();
 
 router.get('/', async (req, res) => {
 
-    let products = await prodManager.getProducts();
-
-    res.send({ status: "success", payload: products });
+    const { query, limit, sort, page } = req.query;
+    let products = await prodManager.getProducts(query, limit, page, sort);
 
 });
 
@@ -43,10 +42,10 @@ router.get('/:pId', async (req, res) => {
     const idSolicitado = req.params.pId;
     let product = await prodManager.getProductById(idSolicitado);
 
-    if(!product.error){
-     res.send({ status: "success", payload: product });
+    if (!product.error) {
+        res.send({ status: "success", payload: product });
 
-    } else{
+    } else {
         res.status(product.status).send(product);
     }
 

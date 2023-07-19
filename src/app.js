@@ -15,8 +15,8 @@ const httpSeerver = app.listen(8080, () => {
     console.log("Server Corriendo en: http://localhost:8080/");
 });
 const io = new Server(httpSeerver);
-
-const connection = mongoose.connect('mongodb+srv://UserHectorCenteno:li0Amcy4Vxr0TGxY@ecomerce.vknmwhs.mongodb.net/?retryWrites=true&w=majority');
+mongoose.set('strictQuery', false);
+const connection = mongoose.connect('mongodb+srv://UserHectorCenteno:li0Amcy4Vxr0TGxY@ecomerce.vknmwhs.mongodb.net/test?retryWrites=true&w=majority');
 
 app.engine('handlebars', handlebars.engine());
 
